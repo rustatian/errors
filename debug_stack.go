@@ -24,30 +24,22 @@ func (e *Error) populateStack() {
 
 	i := 0
 
-	ok = false
 	for ; i < len(e.callers) && i < len(e2.callers); i++ {
-		if e.callers[len(e.callers)-1-i] != e.callers[len(e2.callers)-1-i] {
+		// check for similar
+		if e.callers[len(e.callers)-1-i] != e2.callers[len(e2.callers)-1-i] {
 			break
 		}
-		ok = true
 
+		e2Head := e2.callers[:len(e2.callers)-i]
+		eTail := e.callers
+
+		e.callers = make([]uintptr, len(e2Head)+len(eTail))
+
+		copy(e.callers, e2Head)
+		copy(e.callers[len(e2Head):], eTail)
+
+		e2.callers = nil
 	}
-
-	//ok = false
-	//for ; i < len(e.callers) && i < len(e2.callers); i++ {
-	//	if e.callers[len(e.callers)-1-i] != e2.callers[len(e2.callers)-1-i] {
-	//		break
-	//	}
-	//	ok = true
-	//}
-	//if ok {
-	//	head := e2.callers[:len(e2.callers)-i]
-	//	tail := e.callers
-	//	e.callers = make([]uintptr, len(head)+len(tail))
-	//	copy(e.callers, head)
-	//	copy(e.callers[len(head):], tail)
-	//	e2.callers = nil
-	//}
 }
 
 // frame returns the nth frame, with the frame at top of stack being 0.
@@ -65,17 +57,19 @@ func frame(callers []uintptr, n int) runtime.Frame {
 }
 
 func (e *Error) printStack(b *bytes.Buffer) {
-	printCallers := callers()
+	c := callers()
 
 	var prev string
 	var diff bool
 	for i := 0; i < len(e.callers); i++ {
-		thisFrame := frame(e.callers, i)
+		pc := e.callers[len(e.callers)-i-1] // get current PC
+		fn := runtime.FuncForPC(pc)         // get function by pc
+		name := fn.Name()
 
-		name := thisFrame.Func.Name()
-
-		if !diff && i < len(printCallers) {
-			if name == frame(printCallers, i).Func.Name() {
+		if !diff && i < len(c) {
+			ppc := c[len(c)-i-1]
+			pname := runtime.FuncForPC(ppc).Name()
+			if name == pname {
 				continue
 			}
 			diff = true
@@ -99,7 +93,8 @@ func (e *Error) printStack(b *bytes.Buffer) {
 
 		// Do the printing.
 		appendStrToBuf(b, Separator)
-		fmt.Fprintf(b, "%v:%d: ", thisFrame.File, thisFrame.Line)
+		file, line := fn.FileLine(pc)
+		fmt.Fprintf(b, "%v:%d: ", file, line)
 		if trim > 0 {
 			b.WriteString("...")
 		}
