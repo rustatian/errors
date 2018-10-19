@@ -24,12 +24,18 @@ func (e *Error) populateStack() {
 
 	i := 0
 
+	ok = false
 	for ; i < len(e.callers) && i < len(e2.callers); i++ {
 		// check for similar
 		if e.callers[len(e.callers)-1-i] != e2.callers[len(e2.callers)-1-i] {
 			break
 		}
 
+		ok = true
+
+	}
+
+	if ok { //we have common PCs
 		e2Head := e2.callers[:len(e2.callers)-i]
 		eTail := e.callers
 
