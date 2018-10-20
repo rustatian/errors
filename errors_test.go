@@ -51,12 +51,12 @@ func TestSeparator(t *testing.T) {
 	Separator = ":: "
 
 	// Single error. No user is set, so we will have a zero-length field inside.
-	e1 := E(Op("Get"), Timeout, "network unreachable")
+	e1 := E(Op("Get"), Timeout, "timeout error")
 
 	// Nested error.
-	e2 := E(Op("Read"), CachingInProgress, e1)
+	e2 := E(Op("Get"), Timeout, e1)
 
-	want := "Read: jane@doe.com/file, user joe@blow.com: I/O error:: Get: network unreachable"
+	want := "Get: TO001:: Get: timeout error"
 	if errorAsString(e2) != want {
 		t.Errorf("expected %q; got %q", want, e2)
 	}

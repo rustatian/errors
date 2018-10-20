@@ -97,6 +97,7 @@ func E(args ...interface{}) error {
 			e.Err = &eCopy
 		case error:
 			e.Err = arg
+			// add map map[string]string
 		default:
 			_, file, line, _ := runtime.Caller(1)
 			log.Printf("errors.E: bad call from %s:%d: %v", file, line, args)
@@ -216,4 +217,15 @@ func Is(kind Kind, err error) bool {
 		return Is(kind, e.Err)
 	}
 	return false
+}
+
+// Do smt with no care about result (and panics)
+func SafelyDo(work func()) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf("work failed: %s", err)
+		}
+	}()
+
+	work()
 }
