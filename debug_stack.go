@@ -1,10 +1,11 @@
-// build debug
+// +build debug
 
 package errors
 
 import (
 	"bytes"
 	"fmt"
+	"github.com/ValeryPiashchynski/errors/internal"
 	"runtime"
 	"strings"
 )
@@ -98,7 +99,7 @@ func (e *Error) printStack(b *bytes.Buffer) {
 		}
 
 		// Do the printing.
-		appendStrToBuf(b, Separator)
+		internal.AppendStrToBuf(b, Separator)
 		file, line := fn.FileLine(pc)
 		fmt.Fprintf(b, "%v:%d: ", file, line)
 		if trim > 0 {

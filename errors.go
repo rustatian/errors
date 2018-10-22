@@ -3,8 +3,11 @@ package errors
 import (
 	"bytes"
 	"encoding"
+	"errors"
 	"fmt"
+	"github.com/ValeryPiashchynski/errors/internal"
 	"log"
+	"net/http"
 	"runtime"
 )
 
@@ -30,6 +33,7 @@ var (
 // Op describes an operation
 type Op string
 
+// separator -> new line plus tabulator to intend error if previuos not nil
 var Separator = ":\n\t"
 
 type Kind uint8
@@ -79,10 +83,16 @@ func (k Kind) String() string {
 
 // E builds an error value from its arguments.
 func E(args ...interface{}) error {
-	if len(args) == 0 {
-		panic("call to errors.E with no arguments")
-	}
 	e := &Error{}
+	if len(args) == 0 {
+		msg := "errors.E called with 0 args"
+		_, file, line, ok := runtime.Caller(1)
+		if ok {
+			msg = fmt.Sprintf("%v - %v:%v", msg, file, line)
+		}
+		e.Err = errors.New(msg)
+	}
+
 	for _, arg := range args {
 		switch arg := arg.(type) {
 		case Op:
@@ -124,34 +134,27 @@ func E(args ...interface{}) error {
 	return e
 }
 
-func appendStrToBuf(b *bytes.Buffer, str string) {
-	if b.Len() == 0 {
-		return
-	}
-	b.WriteString(str)
-}
-
 func (e *Error) Error() string {
 	b := new(bytes.Buffer)
 	e.printStack(b)
 	if e.Op != "" {
-		appendStrToBuf(b, ": ")
+		internal.AppendStrToBuf(b, ": ")
 		b.WriteString(string(e.Op))
 	}
 
 	if e.Kind != 0 {
-		appendStrToBuf(b, ": ")
+		internal.AppendStrToBuf(b, ": ")
 		b.WriteString(e.Kind.String())
 	}
 	if e.Err != nil {
 		if prevErr, ok := e.Err.(*Error); ok {
 			if !prevErr.isZero() {
 				// indent - separator
-				appendStrToBuf(b, Separator)
+				internal.AppendStrToBuf(b, Separator)
 				b.WriteString(e.Err.Error())
 			}
 		} else {
-			appendStrToBuf(b, ": ")
+			internal.AppendStrToBuf(b, ": ")
 			b.WriteString(e.Err.Error())
 		}
 	}
@@ -163,19 +166,19 @@ func (e *Error) Error() string {
 
 // errors.New
 func Str(text string) error {
-	return errorString{text}
+	return &errorString{text}
 }
 
 type errorString struct {
 	s string
 }
 
-func (e errorString) Error() string {
+func (e *errorString) Error() string {
 	return e.s
 }
 
 func Errorf(format string, args ...interface{}) error {
-	return errorString{fmt.Sprintf(format, args...)}
+	return &errorString{fmt.Sprintf(format, args...)}
 }
 
 func Match(err1, err2 error) bool {
@@ -204,7 +207,7 @@ func Match(err1, err2 error) bool {
 	return true
 }
 
-// Is reports whether err is an *Error of the given Kind.
+// Is reports whether err is an *Error of the given Kind
 func Is(kind Kind, err error) bool {
 	e, ok := err.(*Error)
 	if !ok {
@@ -217,6 +220,43 @@ func Is(kind Kind, err error) bool {
 		return Is(kind, e.Err)
 	}
 	return false
+}
+
+func IsAnErr(err error) (Kind, int, bool) {
+	e, ok := err.(*Error)
+	if !ok {
+		return 1, -1, false
+	}
+	statusCode := -1
+
+	switch e.Kind {
+	case Undefined:
+		statusCode = http.StatusInternalServerError
+	case MissingFields,
+		IncorrectFieldType,
+		IncorrectHTTPRequest,
+		FieldValidation:
+		statusCode = http.StatusBadRequest
+	case Timeout:
+	case IncorrectAuthToken:
+		statusCode = http.StatusUnauthorized
+	case ActionForbidden:
+		statusCode = http.StatusForbidden
+	case EntityNotFound:
+		statusCode = http.StatusNotFound
+
+		//case FieldValidation:
+		//case IncorrectFieldType:
+	case CachingInProgress:
+		statusCode = http.StatusProcessing
+		//case IncorrectHTTPRequest:
+	case ServiceUnavailable:
+		statusCode = http.StatusServiceUnavailable
+	default:
+		statusCode = http.StatusInternalServerError
+	}
+
+	return e.Kind, statusCode, true
 }
 
 // Do smt with no care about result (and panics)
