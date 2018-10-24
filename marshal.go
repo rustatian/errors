@@ -11,6 +11,7 @@ func (e *Error) MarshalAppend(b []byte) []byte {
 	}
 
 	b = appendString(b, string(e.Op))
+
 	var tmp [16]byte
 	N := binary.PutVarint(tmp[:], int64(e.Kind))
 	b = append(b, tmp[:N]...)

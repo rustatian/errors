@@ -31,6 +31,7 @@ func TestMarshal(t *testing.T) {
 
 	in := e2.(*Error)
 	out := e3.(*Error)
+
 	// Compare elementwise.
 	if in.Op != out.Op {
 		t.Errorf("expected Op %q; got %q", in.Op, out.Op)

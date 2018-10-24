@@ -11,9 +11,9 @@ import (
 
 var errorLines = strings.Split(strings.TrimSpace(`
 	.*/errors/debug_test.go:\d+:  github.com/ValeryPiashchynski/errors.func1:
-	.*/errors/debug_test.go:\d+:  ...T.func2
+	.*/errors/debug_test.go:\d+:  ...T.func2:
 	.*/errors/debug_test.go:\d+:  ...func3:
-	..*/errors/debug_test.go:\d+: ...func4: func2 invoke func3: AUTH002:
+	.*/errors/debug_test.go:\d+: ...func4: func2 invoke func3: AUTH002:
 	func4 operation: error in action
 `), "\n")
 
@@ -21,7 +21,7 @@ var errorLineREs = make([]*regexp.Regexp, len(errorLines))
 
 func init() {
 	for i, s := range errorLines {
-		errorLineREs[i] = regexp.MustCompile(fmt.Sprintf("^%s", s))
+		errorLineREs[i] = regexp.MustCompile(fmt.Sprintf("^%s$", s))
 	}
 }
 
@@ -67,8 +67,8 @@ func func4() error {
 	return E(o, ActionForbidden, Str("error in action"))
 }
 
-///Users/0xdev/Projects/HomeProjects/errors/debug_test	=.go:56: github.com/ValeryPiashchynski/errors.func1:
-///Users/0xdev/Projects/HomeProjects/errors/debug_test.go:61: ...T.func2:
-///Users/0xdev/Projects/HomeProjects/errors/debug_test.go:65: ...func3:
-///Users/0xdev/Projects/HomeProjects/errors/debug_test.go:70: ...func4: func2 invoke func3: AUTH002:
+///Users/0xdev/Projects/HomeProjects/errors/debug_test.go:53: github.com/ValeryPiashchynski/errors.func1:
+///Users/0xdev/Projects/HomeProjects/errors/debug_test.go:58: ...T.func2:
+///Users/0xdev/Projects/HomeProjects/errors/debug_test.go:62: ...func3:
+///Users/0xdev/Projects/HomeProjects/errors/debug_test.go:67: ...func4: func2 invoke func3: AUTH002:
 //func4 operation: error in action

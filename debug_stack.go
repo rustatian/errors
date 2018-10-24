@@ -5,7 +5,6 @@ package errors
 import (
 	"bytes"
 	"fmt"
-	"github.com/ValeryPiashchynski/errors/internal"
 	"runtime"
 	"strings"
 )
@@ -31,9 +30,7 @@ func (e *Error) populateStack() {
 		if e.callers[len(e.callers)-1-i] != e2.callers[len(e2.callers)-1-i] {
 			break
 		}
-
 		ok = true
-
 	}
 
 	if ok { //we have common PCs
@@ -99,7 +96,7 @@ func (e *Error) printStack(b *bytes.Buffer) {
 		}
 
 		// Do the printing.
-		internal.AppendStrToBuf(b, Separator)
+		appendStrToBuf(b, Separator)
 		file, line := fn.FileLine(pc)
 		fmt.Fprintf(b, "%v:%d: ", file, line)
 		if trim > 0 {
@@ -116,4 +113,11 @@ func callers() []uintptr {
 	const skip = 4
 	n := runtime.Callers(skip, stk[:])
 	return stk[:n]
+}
+
+func appendStrToBuf(b *bytes.Buffer, str string) {
+	if b.Len() == 0 {
+		return
+	}
+	b.WriteString(str)
 }
