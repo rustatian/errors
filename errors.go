@@ -201,3 +201,10 @@ func SafelyDo(work func()) {
 
 	work()
 }
+
+func appendStrToBuf(b *bytes.Buffer, str string) {
+	if b.Len() == 0 {
+		return
+	}
+	b.WriteString(str)
+}

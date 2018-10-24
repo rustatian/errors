@@ -114,10 +114,3 @@ func callers() []uintptr {
 	n := runtime.Callers(skip, stk[:])
 	return stk[:n]
 }
-
-func appendStrToBuf(b *bytes.Buffer, str string) {
-	if b.Len() == 0 {
-		return
-	}
-	b.WriteString(str)
-}
