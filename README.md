@@ -1,7 +1,8 @@
 ## Errors
 This is a project to work with errors in a nice way. Motivated by https://commandcenter.blogspot.com/2017/12/error-handling-in-upspin.html
 Errors fully compatible with the std errors
-##Sample of a usage
+
+Sample of a usage
 1. Clone this repo into your project
 2. Create the folder `errors` and put this code into that folder
 3. Define your own error kinds and update tests a little bit
