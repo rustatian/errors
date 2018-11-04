@@ -1,3 +1,4 @@
+// +build debug
 
 package errors
 
@@ -24,7 +25,7 @@ func init() {
 	}
 }
 
-func TestDebug(t *testing.T) {
+func TestsDebug(t *testing.T) {
 	got := printErr(t, func1())
 	lines := strings.Split(got, "\n")
 	for i, re := range errorLineREs {

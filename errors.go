@@ -40,6 +40,8 @@ type Kind uint8
 const (
 	Undefined Kind = iota // Undefined error.
 	Network
+	Other
+	Test
 )
 
 func (k Kind) String() string {
@@ -48,6 +50,11 @@ func (k Kind) String() string {
 		return "UNDEF"
 	case Network:
 		return "Network error"
+	case Other:
+		return "Other"
+	case Test:
+		return "Test"
+
 	}
 	return "unknown error kind"
 }
