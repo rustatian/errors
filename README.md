@@ -42,5 +42,20 @@ func someFunc() (int, error) {
 
 ```
 
+Sample of output with debug mode on:
+```log
+ /debug_test.go:53: github.com/ValeryPiashchynski/errors.func1:
+	/debug_test.go:58: ...T.func2:
+	/debug_test.go:62: ...func3:
+	/debug_test.go:67: ...func4: func2 invoke func3: Network error:
+	func4 operation: error in action
+```
+
+Sample of output w/o debug mode:
+```log
+func2 invoke func3: Network error:
+	func4 operation: error in action
+```
+
 Valery Piashchynski, 
 SpiralScout.com
