@@ -1,1 +1,1 @@
-module github.com/ValeryPiashchynski/errors
+module github.com/48d90782/errors
